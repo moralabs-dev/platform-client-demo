@@ -59,4 +59,13 @@
         eventBus.AddSubscription<OrderPaymentFailedIntegrationEvent, OrderPaymentFailedIntegrationEventHandler>();
         eventBus.AddSubscription<OrderPaymentSucceededIntegrationEvent, OrderPaymentSucceededIntegrationEventHandler>();
     }
+
+    public static void ApplyMigrations(this IApplicationBuilder app)
+    {
+        using IServiceScope scope = app.ApplicationServices.CreateScope();
+
+        using OrderingContext dbContext = scope.ServiceProvider.GetRequiredService<OrderingContext>();
+
+        dbContext.Database.Migrate();
+    }
 }

@@ -1,0 +1,66 @@
+﻿@page "/user/register"
+@using System.ComponentModel.DataAnnotations
+@inject NavigationManager Nav
+@inject IdentityApiClient IdentityApi
+
+<h3>Kayıt Ol</h3>
+
+<EditForm Model="@Input" OnValidSubmit="HandleRegister" FormName="register">
+	<DataAnnotationsValidator />
+	<ValidationSummary />
+
+	<div class="mb-3">
+		<label>Email</label>
+		<InputText @bind-Value="Input.Email"
+				   name="register.Email"
+				   class="form-control" />
+		<ValidationMessage For="@(() => Input.Email)" />
+	</div>
+
+	<div class="mb-3">
+		<label>Şifre</label>
+		<InputText @bind-Value="Input.Password"
+				   name="register.Password"
+				   type="password"
+				   class="form-control" />
+		<ValidationMessage For="@(() => Input.Password)" />
+	</div>
+
+	<div class="mb-3">
+		<label>Şifre Tekrar</label>
+		<InputText @bind-Value="Input.ConfirmPassword"
+				   name="register.ConfirmPassword"
+				   type="password"
+				   class="form-control" />
+		<ValidationMessage For="@(() => Input.ConfirmPassword)" />
+	</div>
+
+	<button type="submit" class="btn btn-primary">Kayıt Ol</button>
+</EditForm>
+
+@code {
+	private RegisterModel Input = new();
+
+	private async Task HandleRegister()
+	{
+		var response = await IdentityApi.RegisterAsync(Input.Email, Input.Password);
+		if (response)
+		{
+			Nav.NavigateTo("/login");
+		}
+	}
+
+	public class RegisterModel
+	{
+		[Required(ErrorMessage = "Email zorunludur")]
+		[EmailAddress(ErrorMessage = "Geçerli bir email giriniz")]
+		public string Email { get; set; } = string.Empty;
+
+		[Required(ErrorMessage = "Şifre zorunludur")]
+		[MinLength(6, ErrorMessage = "Şifre en az 6 karakter olmalı")]
+		public string Password { get; set; } = string.Empty;
+
+		[Compare(nameof(Password), ErrorMessage = "Şifreler uyuşmuyor")]
+		public string ConfirmPassword { get; set; } = string.Empty;
+	}
+}

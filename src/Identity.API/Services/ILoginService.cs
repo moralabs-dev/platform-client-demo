@@ -9,5 +9,7 @@
         Task SignIn(T user);
 
         Task SignInAsync(T user, AuthenticationProperties properties, string authenticationMethod = null);
+
+        Task<IdentityResult> RegisterAsync(string email, string password);
     }
 }

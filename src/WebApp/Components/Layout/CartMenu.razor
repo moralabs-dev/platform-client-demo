@@ -4,49 +4,71 @@
 @inject LogOutService LogOutService
 @inject NavigationManager NavigationManager
 @implements IDisposable
+@inject IdentityApiClient IdentityApi
+@rendermode InteractiveServer
 
 <a aria-label="cart" href="cart">
-    <img role="presentation" src="icons/cart.svg" />
-    @if (basketItems?.Count > 0)
-    {
-        <span class="cart-badge">@TotalQuantity</span>
-    }
+	<img role="presentation" src="icons/cart.svg" />
+	@if (basketItems?.Count > 0)
+	{
+		<span class="cart-badge">@TotalQuantity</span>
+	}
+</a>
+
+<a aria-label="cart" href="game">
+	Navigate to Game
 </a>
 
 @code {
-    IDisposable? basketStateSubscription;
-    private IReadOnlyCollection<BasketItem>? basketItems;
+	IDisposable? basketStateSubscription;
+	private IReadOnlyCollection<BasketItem>? basketItems;
 
-    [CascadingParameter]
-    public HttpContext? HttpContext { get; set; }
+	[CascadingParameter]
+	public HttpContext? HttpContext { get; set; }
 
-    private int? TotalQuantity => basketItems?.Sum(i => i.Quantity);
+	private int? TotalQuantity => basketItems?.Sum(i => i.Quantity);
 
-    protected override async Task OnInitializedAsync()
-    {
-        // The basket contents may change during the lifetime of this component (e.g., when an item is
-        // added during the current request). If this EventCallback is invoked, it will cause this
-        // component to re-render with the updated data.
-        basketStateSubscription = Basket.NotifyOnChange(
-            EventCallback.Factory.Create(this, UpdateBasketItemsAsync));
+	protected override async Task OnInitializedAsync()
+	{
+		basketStateSubscription = Basket.NotifyOnChange(
+			EventCallback.Factory.Create(this, UpdateBasketItemsAsync));
 
-        try
-        {
-            await UpdateBasketItemsAsync();
-        }
-        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
-        {
-            await LogOutService.LogOutAsync(HttpContext!);
-        }
-    }
+		try
+		{
+			await UpdateBasketItemsAsync();
+		}
+		catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
+		{
+			await LogOutService.LogOutAsync(HttpContext!);
+		}
+	}
 
-    public void Dispose()
-    {
-        basketStateSubscription?.Dispose();
-    }
+	public void Dispose()
+	{
+		basketStateSubscription?.Dispose();
+	}
 
-    private async Task UpdateBasketItemsAsync()
-    {
-        basketItems = await Basket.GetBasketItemsAsync();
-    }
+	private async Task UpdateBasketItemsAsync()
+	{
+		basketItems = await Basket.GetBasketItemsAsync();
+	}
+
+	private async Task NavigateToGame()
+	{
+		try
+		{
+			Console.WriteLine("Navigation button clicked!");
+
+			// Eğer API çağrısı gerekliyse:
+			var response = await IdentityApi.GetNavigationToken();
+			// if (response.Success)
+			// {
+			//     NavigationManager.NavigateTo(response.RedirectUrl);
+			// }
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Navigation failed: {ex.Message}");
+		}
+	}
 }

@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+using System.Text.Json;
+using StackExchange.Redis;
+
 namespace IdentityServerHost.Quickstart.UI
 {
     [SecurityHeaders]
@@ -14,6 +17,11 @@ namespace IdentityServerHost.Quickstart.UI
         private readonly IAuthenticationSchemeProvider _schemeProvider;
         private readonly IAuthenticationHandlerProvider _handlerProvider;
         private readonly IEventService _events;
+        private readonly ILoginService<ApplicationUser> _loginService;
+        private readonly IDatabase _database;
+
+
+
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
@@ -22,7 +30,9 @@ namespace IdentityServerHost.Quickstart.UI
             IClientStore clientStore,
             IAuthenticationSchemeProvider schemeProvider,
             IAuthenticationHandlerProvider handlerProvider,
-            IEventService events)
+            IEventService events,
+            ILoginService<ApplicationUser> loginService,
+            IConnectionMultiplexer redis)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -31,6 +41,8 @@ namespace IdentityServerHost.Quickstart.UI
             _schemeProvider = schemeProvider;
             _handlerProvider = handlerProvider;
             _events = events;
+            _loginService = loginService;
+            _database = redis.GetDatabase();
         }
 
         /// <summary>
@@ -51,6 +63,68 @@ namespace IdentityServerHost.Quickstart.UI
             }
 
             return View(vm);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register([FromBody] RegisterInputModel registerInputModel)
+        {
+            Console.WriteLine("Register:" + JsonSerializer.Serialize(registerInputModel));
+            await _loginService.RegisterAsync(registerInputModel.Email, registerInputModel.Password);
+            return Ok();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Navigate()
+        {
+            if (User?.Identity?.IsAuthenticated != true)
+            {
+                return Unauthorized("User is not authenticated");
+            }
+            var userId = User.FindFirst(JwtClaimTypes.Subject)?.Value;
+
+            var value = Guid.NewGuid().ToString();
+            var created = await _database.StringSetAsync(new RedisKey(value), new RedisValue(userId));
+            return Ok(new
+            {
+                Data = created ? value : null,
+                Success = created,
+                Message = created ? "Key created successfully" : "Key creation failed",
+                UserMessage = created ? "Key created successfully" : "Key creation failed"
+            });
+        }
+        [HttpPost]
+        public async Task<IActionResult> UserInfo([FromBody] string token)
+        {
+            var userId = await _database.StringGetAsync(new RedisKey(token));
+
+            Console.WriteLine("UserInfo:" + userId);
+
+            if (userId.IsNullOrEmpty)
+            {
+                return Unauthorized("Invalid token");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            var userInfo = new
+            {
+                user.Id,
+                user.UserName,
+                user.Email,
+                user.PhoneNumber,
+            };
+            return Ok(new
+            {
+                Data = userInfo,
+                Success = true,
+                Message = "User info retrieved successfully",
+
+            });
         }
 
         /// <summary>

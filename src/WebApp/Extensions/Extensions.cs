@@ -35,9 +35,19 @@ public static class Extensions
             .AddApiVersion(2.0)
             .AddAuthToken();
 
+        builder.Services.AddHttpClient<IdentityApiClient>(o => o.BaseAddress = new("http://identity-api"))
+        .AddAuthToken();
+
+
         builder.Services.AddHttpClient<OrderingService>(o => o.BaseAddress = new("http://ordering-api"))
             .AddApiVersion(1.0)
             .AddAuthToken();
+
+        builder.Services.AddHttpClient<ProjectService>(o => o.BaseAddress = new("https://api.playtics.io"))
+            .AddApiVersion(1.0)
+            .AddAuthToken();
+
+
     }
 
     public static void AddEventBusSubscriptions(this IEventBusBuilder eventBus)

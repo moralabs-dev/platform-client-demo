@@ -13,6 +13,11 @@ builder.AddDefaultOpenApi(withApiVersioning);
 
 var app = builder.Build();
 
+if (app.Environment.IsDevelopment())
+{
+    app.ApplyMigrations();
+}
+
 app.MapDefaultEndpoints();
 
 app.UseStatusCodePages();

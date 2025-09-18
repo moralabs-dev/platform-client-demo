@@ -1,0 +1,52 @@
+﻿@page "/game"
+@using eShop.WebAppComponents.Game
+@inject NavigationManager Nav
+@inject ProjectService ProjectService
+@inject IdentityApiClient IdentityApi
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
+
+
+<PageTitle>AdventureWorks</PageTitle>
+<SectionContent SectionName="page-header-title">Ready for a new adventure?</SectionContent>
+<SectionContent SectionName="page-header-subtitle">Start the season with the latest in clothing and equipment.</SectionContent>
+
+<div class="project">
+
+	@if (projectResult is null)
+	{
+		<p>Loading...</p>
+	}
+	else
+	{
+		<div>
+			<div class="project-items">
+				@foreach (var item in projectResult)
+				{
+					<GameListItem Item="@item" OnClick="(item)=> HandleNavigate(item)" />
+				}
+			</div>
+
+		</div>
+	}
+</div>
+
+@code {
+
+	List<ProjectItem>? projectResult;
+
+	protected override async Task OnInitializedAsync()
+	{
+		projectResult = await ProjectService.GetProjects();
+		Console.WriteLine("projests", projectResult);
+
+	}
+
+	private async Task HandleNavigate(ProjectItem item)
+	{
+		Console.WriteLine("test");
+		var code = await IdentityApi.GetNavigationToken();
+		Nav.NavigateTo($"https://game.wordle.playtics.io/game?Token={code}&ProjectKey={item.Key}", forceLoad: true);
+	}
+}

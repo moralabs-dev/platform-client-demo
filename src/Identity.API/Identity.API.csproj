@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.StackExchange.Redis" />
     <PackageReference Include="Duende.IdentityServer.AspNetIdentity" />
     <PackageReference Include="Duende.IdentityServer.EntityFramework" />
     <PackageReference Include="Duende.IdentityServer.Storage" />
@@ -24,6 +25,7 @@
     <None Include="Views\Account\AccessDenied.cshtml" />
     <None Include="Views\Account\LoggedOut.cshtml" />
     <None Include="Views\Account\Login.cshtml" />
+    <None Include="Views\Account\Register.cshtml" />
     <None Include="Views\Account\Logout.cshtml" />
     <None Include="Views\Consent\Index.cshtml" />
     <None Include="Views\Device\Success.cshtml" />

@@ -1,0 +1,25 @@
+﻿@using eShop.WebAppComponents.Game
+@using eShop.WebAppComponents.Item
+@inject IProductImageUrlProvider ProductImages
+
+<div class="game-item">
+    <button type="button" class="game-product" @onclick="()=> OnClick.InvokeAsync(Item)">
+        <span class="game-product-image">
+            <img alt="@Item.Name" src="@Item.ImageUrl" />
+        </span>
+        <span class="game-product-content">
+            <span class="name">@Item.Name</span>
+        </span>
+    </button>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required ProjectItem Item { get; set; }
+
+    [Parameter]
+    public bool IsLoggedIn { get; set; }
+
+    [Parameter]
+    public EventCallback<ProjectItem> OnClick { get; set; }
+}

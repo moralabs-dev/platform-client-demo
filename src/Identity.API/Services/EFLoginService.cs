@@ -30,5 +30,11 @@
         {
             return _signInManager.SignInAsync(user, properties, authenticationMethod);
         }
+        public async Task<IdentityResult> RegisterAsync(string email, string password)
+        {
+            var user = new ApplicationUser { UserName = email, Email = email,  };
+            var result = await _userManager.CreateAsync(user, password);
+            return result;
+        }
     }
 }

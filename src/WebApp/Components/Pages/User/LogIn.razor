@@ -2,20 +2,20 @@
 @inject NavigationManager Nav
 @attribute [Authorize]
 @code {
-    [SupplyParameterFromQuery]
-    public string? ReturnUrl { get; set; }
+	[SupplyParameterFromQuery]
+	public string? ReturnUrl { get; set; }
 
-    [CascadingParameter]
-    public HttpContext? HttpContext { get; set; }
+	[CascadingParameter]
+	public HttpContext? HttpContext { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        var returnUrl = ReturnUrl ?? "/";
-        var url = new Uri(returnUrl, UriKind.RelativeOrAbsolute);
-        Nav.NavigateTo(url.IsAbsoluteUri ? "/" : returnUrl);
-        await base.OnInitializedAsync();
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		var returnUrl = ReturnUrl ?? "/";
+		var url = new Uri(returnUrl, UriKind.RelativeOrAbsolute);
+		Nav.NavigateTo(url.IsAbsoluteUri ? "/" : returnUrl);
+		await base.OnInitializedAsync();
+	}
 
-    public static string Url(NavigationManager nav)
-        => $"user/login?returnUrl={Uri.EscapeDataString(nav.ToBaseRelativePath(nav.Uri))}";
+	public static string Url(NavigationManager nav)
+		=> $"user/login?returnUrl={Uri.EscapeDataString(nav.ToBaseRelativePath(nav.Uri))}";
 }
